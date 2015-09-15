@@ -1,15 +1,25 @@
 import { url } from 'discourse/lib/computed';
 import { default as computed, observes } from 'ember-addons/ember-computed-decorators';
+import { headerHeight } from 'discourse/views/header';
 
 export default Ember.Component.extend({
   classNames: ['user-menu'],
   notifications: null,
   loadingNotifications: false,
-  myNotificationsUrl: url('/my/notifications'),
+  notificationsPath: url('currentUser.path', '%@/notifications'),
+  bookmarksPath: url('currentUser.path', '%@/activity/bookmarks'),
+  messagesPath: url('currentUser.path', '%@/messages'),
+  preferencesPath: url('currentUser.path', '%@/preferences'),
+
+  @computed('allowAnon', 'isAnon')
+  showEnableAnon(allowAnon, isAnon) { return allowAnon && !isAnon; },
+
+  @computed('allowAnon', 'isAnon')
+  showDisableAnon(allowAnon, isAnon) { return allowAnon && isAnon; },
 
   @observes('visible')
-  _loadNotifications(visible) {
-    if (visible) {
+  _loadNotifications() {
+    if (this.get("visible")) {
       this.refreshNotifications();
     }
   },
@@ -31,50 +41,44 @@ export default Ember.Component.extend({
     }
   },
 
-  loadCachedNotifications() {
-    var notifications;
-    try {
-      notifications = JSON.parse(localStorage["notifications"]);
-      notifications = notifications.map(n => Em.Object.create(n));
-    } catch (e) {
-      notifications = null;
-    }
-    return notifications;
-  },
-
-  // TODO push this kind of functionality into Rest thingy
-  cacheNotifications(notifications) {
-    const keys = ["id", "notification_type", "read", "created_at", "post_number", "topic_id", "slug", "data"];
-    const serialized = JSON.stringify(notifications.map(n => n.getProperties(keys)));
-    const changed = serialized !== localStorage["notifications"];
-    localStorage["notifications"] = serialized;
-    return changed;
-  },
-
   refreshNotifications() {
-
     if (this.get('loadingNotifications')) { return; }
 
-    var cached = this.loadCachedNotifications();
-
-    if (cached) {
-      this.set("notifications", cached);
-    } else {
-      this.set("loadingNotifications", true);
-    }
+    // estimate (poorly) the amount of notifications to return
+    var limit = Math.round(($(window).height() - headerHeight()) / 50);
+    // we REALLY don't want to be asking for negative counts of notifications
+    // less than 5 is also not that useful
+    if (limit < 5) { limit = 5; }
+    if (limit > 40) { limit = 40; }
 
     // TODO: It's a bit odd to use the store in a component, but this one really
     // wants to reach out and grab notifications
     const store = this.container.lookup('store:main');
-    store.find('notification', {recent: true}).then((notifications) => {
-      this.set('currentUser.unread_notifications', 0);
-      if (this.cacheNotifications(notifications)) {
-        this.setProperties({ notifications });
+    const stale = store.findStale('notification', {recent: true, limit }, {storageKey: 'recent-notifications'});
+
+    if (stale.hasResults) {
+      const results = stale.results;
+      var content = results.get('content');
+
+      // we have to truncate to limit, otherwise we will render too much
+      if (content && (content.length > limit)) {
+        content = content.splice(0, limit);
+        results.set('content', content);
+        results.set('totalRows', limit);
       }
+
+      this.set('notifications', results);
+    } else {
+      this.set('loadingNotifications', true);
+    }
+
+    stale.refresh().then((notifications) => {
+      this.set('currentUser.unread_notifications', 0);
+      this.set('notifications', notifications);
     }).catch(() => {
       this.set('notifications', null);
     }).finally(() => {
-      this.set("loadingNotifications", false);
+      this.set('loadingNotifications', false);
     });
   },
 
@@ -92,6 +96,9 @@ export default Ember.Component.extend({
       Discourse.ajax("/users/toggle-anon", {method: 'POST'}).then(function(){
         window.location.reload();
       });
+    },
+    logout() {
+      this.sendAction('logoutAction');
     }
   }
 });

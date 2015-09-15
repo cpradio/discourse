@@ -27,12 +27,19 @@ export default Ember.Controller.extend({
     ];
   }.property(),
 
+  trustLevelOptions: function() {
+    return [
+      { name: I18n.t("groups.trust_levels.none"), value: 0 },
+      { name: 1, value: 1 }, { name: 2, value: 2 }, { name: 3, value: 3 }, { name: 4, value: 4 }
+    ];
+  }.property(),
+
   actions: {
     next() {
       if (this.get("showingLast")) { return; }
 
       const group = this.get("model"),
-            offset = Math.min(group.get("offset") + group.get("model.limit"), group.get("user_count"));
+            offset = Math.min(group.get("offset") + group.get("limit"), group.get("user_count"));
 
       group.set("offset", offset);
 
@@ -43,7 +50,7 @@ export default Ember.Controller.extend({
       if (this.get("showingFirst")) { return; }
 
       const group = this.get("model"),
-            offset = Math.max(group.get("offset") - group.get("model.limit"), 0);
+            offset = Math.max(group.get("offset") - group.get("limit"), 0);
 
       group.set("offset", offset);
 

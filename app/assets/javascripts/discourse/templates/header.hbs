@@ -1,10 +1,7 @@
-{{user-menu visible=userMenuVisible}}
-{{hamburger-menu visible=hamburgerVisible showKeyboardAction="showKeyboardShortcutsHelp"}}
-{{search-menu visible=searchVisible}}
-
 <div class='wrap'>
   <div class='contents clearfix'>
     {{home-logo minimized=showExtraInfo}}
+    {{plugin-outlet "header-after-home-logo"}}
 
     <div class='panel clearfix'>
       {{#unless currentUser}}
@@ -21,6 +18,7 @@
         {{#header-dropdown iconId="search-button"
                            icon="search"
                            toggleVisible=searchVisible
+                           mobileAction="fullPageSearch"
                            loginAction="showLogin"
                            title="search.title"}}
         {{/header-dropdown}}
@@ -43,15 +41,18 @@
                              loginAction="showLogin"
                              title="user.avatar.header_title"}}
             {{#if currentUser.unread_notifications}}
-              <a href class='badge-notification unread-notifications'>{{currentUser.unread_notifications}}</a>
+              <a href {{action "showUserMenu"}} class='badge-notification unread-notifications'>{{currentUser.unread_notifications}}</a>
             {{/if}}
             {{#if currentUser.unread_private_messages}}
-              <a href class='badge-notification unread-private-messages'>{{currentUser.unread_private_messages}}</a>
+              <a href {{action "showUserMenu"}} class='badge-notification unread-private-messages'>{{currentUser.unread_private_messages}}</a>
             {{/if}}
           {{/header-dropdown}}
         {{/if}}
-        {{plugin-outlet "header-before-dropdowns"}}
       </ul>
+        {{plugin-outlet "header-before-dropdowns"}}
+        {{user-menu visible=userMenuVisible logoutAction="logout"}}
+        {{hamburger-menu visible=hamburgerVisible showKeyboardAction="showKeyboardShortcutsHelp"}}
+        {{search-menu visible=searchVisible}}
     </div>
 
     {{#if showExtraInfo}}

@@ -1,6 +1,8 @@
 import { setting } from 'discourse/lib/computed';
+import logout from 'discourse/lib/logout';
 import showModal from 'discourse/lib/show-modal';
 import OpenComposer from "discourse/mixins/open-composer";
+import Category from 'discourse/models/category';
 
 function unlessReadOnly(method) {
   return function() {
@@ -16,6 +18,13 @@ const ApplicationRoute = Discourse.Route.extend(OpenComposer, {
   siteTitle: setting('title'),
 
   actions: {
+
+    logout() {
+      if (this.currentUser) {
+        this.currentUser.destroySession().then(() => logout(this.siteSettings, this.keyValueStore));
+      }
+    },
+
     _collectTitleTokens(tokens) {
       tokens.push(this.get('siteTitle'));
       Discourse.set('_docTitle', tokens.join(' - '));
@@ -118,11 +127,12 @@ const ApplicationRoute = Discourse.Route.extend(OpenComposer, {
     },
 
     editCategory(category) {
-      const self = this;
-      Discourse.Category.reloadById(category.get('id')).then(function (model) {
-        self.site.updateCategory(model);
+      Category.reloadById(category.get('id')).then((atts) => {
+        const model = this.store.createRecord('category', atts.category);
+        model.setupGroupsAndPermissions();
+        this.site.updateCategory(model);
         showModal('editCategory', { model });
-        self.controllerFor('editCategory').set('selectedTab', 'general');
+        this.controllerFor('editCategory').set('selectedTab', 'general');
       });
     },
 

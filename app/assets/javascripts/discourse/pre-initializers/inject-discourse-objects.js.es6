@@ -1,20 +1,22 @@
 import Session from 'discourse/models/session';
+import KeyValueStore from 'discourse/lib/key-value-store';
 import AppEvents from 'discourse/lib/app-events';
 import Store from 'discourse/models/store';
 import DiscourseURL from 'discourse/lib/url';
 import DiscourseLocation from 'discourse/lib/discourse-location';
 import SearchService from 'discourse/services/search';
+import TopicTrackingState from 'discourse/models/topic-tracking-state';
 
 function inject() {
   const app = arguments[0],
         name = arguments[1],
-        singletonName = Ember.String.underscore(name).replace(/_/, '-') + ':main';
+        singletonName = Ember.String.underscore(name).replace(/_/g, '-') + ':main';
 
   Array.prototype.slice.call(arguments, 2).forEach(dest => app.inject(dest, name, singletonName));
 }
 
 function injectAll(app, name) {
-  inject(app, name, 'controller', 'component', 'route', 'view', 'model');
+  inject(app, name, 'controller', 'component', 'route', 'view', 'model', 'adapter');
 }
 
 export default {
@@ -28,6 +30,12 @@ export default {
 
     app.register('store:main', Store);
     inject(app, 'store', 'route', 'controller');
+
+    app.register('message-bus:main', window.MessageBus, { instantiate: false });
+    injectAll(app, 'messageBus');
+
+    app.register('topic-tracking-state:main', TopicTrackingState.current(), { instantiate: false });
+    injectAll(app, 'topicTrackingState');
 
     const site = Discourse.Site.current();
     app.register('site:main', site, { instantiate: false });
@@ -45,9 +53,10 @@ export default {
     app.register('current-user:main', Discourse.User.current(), { instantiate: false });
     inject(app, 'currentUser', 'component', 'route', 'controller');
 
-    app.register('message-bus:main', window.MessageBus, { instantiate: false });
-    injectAll(app, 'messageBus');
-
     app.register('location:discourse-location', DiscourseLocation);
+
+    const keyValueStore = new KeyValueStore("discourse_");
+    app.register('key-value-store:main', keyValueStore, { instantiate: false });
+    injectAll(app, 'keyValueStore');
   }
 };
