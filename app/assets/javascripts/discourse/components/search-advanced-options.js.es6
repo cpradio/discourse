@@ -107,12 +107,15 @@ export default Em.Component.extend({
 
     const categoryMatches = searchTerm.match(/\s?(\#[a-zA-Z0-9\-:]+|category:[a-zA-Z0-9\-:]+)/ig);
     const categoryFilter = this.get('searchedTerms.category');
-    if (categoryFilter && categoryFilter.length !== 0)
+    if (categoryFilter && categoryFilter.length !== 0) {
+      const slug = (categoryFilter[0].parentCategory)
+        ? categoryFilter[0].parentCategory.slug + ":" + categoryFilter[0].slug
+        : categoryFilter[0].slug;
       if (categoryMatches)
-        searchTerm = searchTerm.replace(categoryMatches[0], ' category:' + categoryFilter);
+        searchTerm = searchTerm.replace(categoryMatches[0], ' category:' + slug);
       else
-        searchTerm += ' category:' + categoryFilter;
-    else if (categoryMatches)
+        searchTerm += ' category:' + slug;
+    } else if (categoryMatches)
       searchTerm = searchTerm.replace(categoryMatches[0], '');
 
     this.set('searchTerm', searchTerm);
