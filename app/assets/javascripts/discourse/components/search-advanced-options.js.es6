@@ -42,7 +42,10 @@ export default Em.Component.extend({
       if (subcategories.length > 1)
         this.set('searchedTerms.category', [Discourse.Category.findBySlug(subcategories[1], subcategories[0])]);
       else
-        this.set('searchedTerms.category', [Discourse.Category.findSingleBySlug(subcategories[0])]);
+        if (isNaN(subcategories))
+          this.set('searchedTerms.category', [Discourse.Category.findSingleBySlug(subcategories[0])]);
+        else
+          this.set('searchedTerms.category', [Discourse.Category.findById(subcategories[0])]);
     } else
       this.set('searchedTerms.category', []);
 
@@ -108,13 +111,10 @@ export default Em.Component.extend({
     const categoryMatches = searchTerm.match(/\s?(\#[a-zA-Z0-9\-:]+|category:[a-zA-Z0-9\-:]+)/ig);
     const categoryFilter = this.get('searchedTerms.category');
     if (categoryFilter && categoryFilter.length !== 0) {
-      const slug = (categoryFilter[0].parentCategory)
-        ? categoryFilter[0].parentCategory.slug + ":" + categoryFilter[0].slug
-        : categoryFilter[0].slug;
       if (categoryMatches)
-        searchTerm = searchTerm.replace(categoryMatches[0], ' category:' + slug);
+        searchTerm = searchTerm.replace(categoryMatches[0], ' category:' + categoryFilter[0].id);
       else
-        searchTerm += ' category:' + slug;
+        searchTerm += ' category:' + categoryFilter[0].id;
     } else if (categoryMatches)
       searchTerm = searchTerm.replace(categoryMatches[0], '');
 
