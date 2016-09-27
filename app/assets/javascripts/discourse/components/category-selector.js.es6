@@ -11,7 +11,7 @@ export default Ember.Component.extend({
 
     this.$('input').autocomplete({
       items: this.get('categories'),
-      single: false,
+      single: this.get('single'),
       allowAny: false,
       dataSource(term) {
         return Category.list().filter(category => {

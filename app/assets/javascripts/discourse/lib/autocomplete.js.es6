@@ -176,11 +176,17 @@ export default function(options) {
         if (options.reverseTransform) {
           x = options.reverseTransform(x);
         }
+        if(options.single){
+          me.hide();
+        }
         addInputSelectedItem(x);
       }
     });
     if(options.items) {
       _.each(options.items, function(item){
+        if(options.single){
+          me.hide();
+        }
         addInputSelectedItem(item);
       });
     }

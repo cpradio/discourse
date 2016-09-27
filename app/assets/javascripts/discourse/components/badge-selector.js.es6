@@ -9,29 +9,29 @@ export default Ember.Component.extend({
   @on('didInsertElement')
   _initializeAutocomplete() {
     var self = this;
-    var selectedGroups;
+    var selectedBadges;
 
-    var template = this.container.lookup('template:group-selector-autocomplete.raw');
+    var template = this.container.lookup('template:badge-selector-autocomplete.raw');
     self.$('input').autocomplete({
       allowAny: false,
-      items: this.get('groupNames'),
+      items: this.get('badgeNames'),
       single: this.get('single'),
       onChangeItems: function(items){
-        selectedGroups = items;
-        self.set("groupNames", items.join(","));
+        selectedBadges = items;
+        self.set("badgeNames", items.join(","));
       },
       transformComplete: function(g) {
         return g.name;
       },
       dataSource: function(term) {
-        return self.get("groupFinder")(term).then(function(groups){
+        return self.get("badgeFinder")(term).then(function(badges){
 
-          if(!selectedGroups){
-            return groups;
+          if(!selectedBadges){
+            return badges;
           }
 
-          return groups.filter(function(group){
-            return !selectedGroups.any(function(s){return s === group.name;});
+          return badges.filter(function(badge){
+            return !selectedBadges.any(function(s){return s === badge.name;});
           });
         });
       },
