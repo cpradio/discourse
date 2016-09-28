@@ -1242,6 +1242,13 @@ en:
           pinned: are pinned
           unpinned: are not pinned
           wiki: are wiki
+        statuses:
+          label: Where topics
+          open: are open
+          closed: are closed
+          archived: are archived
+          noreplies: have zero replies
+          single_user: contain a single user
         post:
           count:
             label: Minimum Post Count

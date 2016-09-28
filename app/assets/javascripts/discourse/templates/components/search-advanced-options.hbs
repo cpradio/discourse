@@ -52,19 +52,25 @@
         </div>
       </div>
       <div class="control-group pull-left">
-        <label class="control-label" for="search-posts-count">{{i18n "search.advanced.post.count.label"}}</label>
+        <label class="control-label" for="search-status-options">{{i18n "search.advanced.statuses.label"}}</label>
         <div class="controls">
-          {{input type="number" value=searchedTerms.posts_count class="input-small" id='search-posts-count'}}
+          {{combo-box valueAttribute="value" content=statusOptions value=searchedTerms.status none="user.locale.any"}}
         </div>
       </div>
     </div>
 
     <div class="container">
-      <div class="control-group">
+      <div class="control-group pull-left">
         <label class="control-label" for="search-post-date">{{i18n "search.advanced.post.time.label"}}</label>
         <div class="controls">
           {{combo-box valueAttribute="value" content=postTimeOptions value=searchedTerms.time.when}}
           {{input type="text" value=searchedTerms.time.days class="input-small" id='search-post-date'}}
+        </div>
+      </div>
+      <div class="control-group pull-left">
+        <label class="control-label" for="search-posts-count">{{i18n "search.advanced.post.count.label"}}</label>
+        <div class="controls">
+          {{input type="number" value=searchedTerms.posts_count class="input-small" id='search-posts-count'}}
         </div>
       </div>
     </div>

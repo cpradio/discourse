@@ -4,7 +4,7 @@ export default Em.Component.extend({
   tagName: 'div',
   classNames: ['search-advanced', 'row'],
   searchedTerms: {username: [], category: [], group: [], badge: [], tags: [],
-    in: '', posts_count: '', time: {when: 'before', days: ''}},
+    in: '', status: '', posts_count: '', time: {when: 'before', days: ''}},
   inOptions: [
     {name: I18n.t('search.advanced.filters.likes'),     value: "likes"},
     {name: I18n.t('search.advanced.filters.posted'),    value: "posted"},
@@ -17,13 +17,20 @@ export default Em.Component.extend({
     {name: I18n.t('search.advanced.filters.unpinned'),  value: "unpinned"},
     {name: I18n.t('search.advanced.filters.wiki'),      value: "wiki"}
   ],
+  statusOptions: [
+    {name: I18n.t('search.advanced.statuses.open'),        value: "open"},
+    {name: I18n.t('search.advanced.statuses.closed'),      value: "closed"},
+    {name: I18n.t('search.advanced.statuses.archived'),    value: "archived"},
+    {name: I18n.t('search.advanced.statuses.noreplies'),   value: "noreplies"},
+    {name: I18n.t('search.advanced.statuses.single_user'), value: "single_user"},
+  ],
   postTimeOptions: [
     {name: I18n.t('search.advanced.post.time.before'),  value: "before"},
     {name: I18n.t('search.advanced.post.time.after'),   value: "after"}
   ],
 
-  @on('init', 'didUpdate')
-    @observes('searchTerm')
+  @on('init')
+  @observes('searchTerm')
   _init() {
     const searchTerm = this.get('searchTerm');
 
@@ -72,6 +79,12 @@ export default Em.Component.extend({
       this.set('searchedTerms.in', inMatches[0].replace('in:', ''));
     else
       this.set('searchedTerms.in', '');
+
+    const statusMatches = searchTerm.match(/(status:[a-zA-Z_]+)/ig);
+    if (statusMatches)
+      this.set('searchedTerms.status', statusMatches[0].replace('status:', ''));
+    else
+      this.set('searchedTerms.status', '');
 
     const postCountMatches = searchTerm.match(/(posts_count:[0-9]+)/ig);
     if (postCountMatches)
@@ -189,6 +202,23 @@ export default Em.Component.extend({
     this.set('searchTerm', searchTerm);
   },
 
+  @observes('searchedTerms.status')
+  updateStatus() {
+    let searchTerm = this.get('searchTerm');
+
+    const statusMatches = searchTerm.match(/\s?(status:[a-zA-Z_]+)/ig);
+    const statusFilter = this.get('searchedTerms.status');
+    if (statusFilter)
+      if (statusMatches)
+        searchTerm = searchTerm.replace(statusMatches[0], ' status:' + statusFilter);
+      else
+        searchTerm += ' status:' + statusFilter;
+    else if (statusMatches)
+      searchTerm = searchTerm.replace(statusMatches[0], '');
+
+    this.set('searchTerm', searchTerm);
+  },
+
   @observes('searchedTerms.posts_count')
   updatePostsCount() {
     let searchTerm = this.get('searchTerm');
@@ -245,6 +275,8 @@ export default Em.Component.extend({
   actions: {
     expandOptions() {
       this.set('isExpanded', !this.get('isExpanded'));
+      if (this.get('isExpanded'))
+        this._init();
     }
   }
 });
