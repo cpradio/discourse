@@ -52,16 +52,19 @@ export default Em.Component.extend({
       const subcategories = categoryMatches[0].replace('category:', '').replace('#', '').split(':');
       if (subcategories.length > 1) {
         let userInput = Discourse.Category.findBySlug(subcategories[1], subcategories[0]);
-        if (!existingInput || (userInput && existingInput.id !== userInput.id))
+        if ((!existingInput && userInput)
+          || (existingInput && userInput && existingInput.id !== userInput.id))
           this.set('searchedTerms.category', [userInput]);
       } else
         if (isNaN(subcategories)) {
           let userInput = Discourse.Category.findSingleBySlug(subcategories[0]);
-          if (!existingInput || (userInput && existingInput.id !== userInput.id))
+          if ((!existingInput && userInput)
+            || (existingInput && userInput && existingInput.id !== userInput.id))
             this.set('searchedTerms.category', [userInput]);
         } else {
           let userInput = Discourse.Category.findById(subcategories[0]);
-          if (!existingInput || (userInput && existingInput.id !== userInput.id))
+          if ((!existingInput && userInput)
+            || (existingInput && userInput && existingInput.id !== userInput.id))
             this.set('searchedTerms.category', [userInput]);
         }
     } else
