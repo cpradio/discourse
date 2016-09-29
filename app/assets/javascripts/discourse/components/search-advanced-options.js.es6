@@ -39,63 +39,101 @@ export default Em.Component.extend({
 
     const userMatches = searchTerm.match(/(\@[a-zA-Z0-9_\-.]+|user:[a-zA-Z0-9_\-.]+)/ig);
     if (userMatches) {
-      this.set('searchedTerms.username', [userMatches[0].replace('user:', '').replace('@', '')]);
+      let existingInput = _.isArray(this.get('searchedTerms.username')) ? this.get('searchedTerms.username')[0] : this.get('searchedTerms.username');
+      let userInput = userMatches[0].replace('user:', '').replace('@', '');
+      if (existingInput !== userInput)
+        this.set('searchedTerms.username', [userInput]);
     } else
       this.set('searchedTerms.username', []);
 
     const categoryMatches = searchTerm.match(/(\#[a-zA-Z0-9\-:]+|category:[0-9]+)/ig);
     if (categoryMatches) {
+      let existingInput = _.isArray(this.get('searchedTerms.category')) ? this.get('searchedTerms.category')[0] : this.get('searchedTerms.category');
       const subcategories = categoryMatches[0].replace('category:', '').replace('#', '').split(':');
-      if (subcategories.length > 1)
-        this.set('searchedTerms.category', [Discourse.Category.findBySlug(subcategories[1], subcategories[0])]);
-      else
-        if (isNaN(subcategories))
-          this.set('searchedTerms.category', [Discourse.Category.findSingleBySlug(subcategories[0])]);
-        else
-          this.set('searchedTerms.category', [Discourse.Category.findById(subcategories[0])]);
+      if (subcategories.length > 1) {
+        let userInput = Discourse.Category.findBySlug(subcategories[1], subcategories[0]);
+        if (!existingInput || (userInput && existingInput.id !== userInput.id))
+          this.set('searchedTerms.category', [userInput]);
+      } else
+        if (isNaN(subcategories)) {
+          let userInput = Discourse.Category.findSingleBySlug(subcategories[0]);
+          if (!existingInput || (userInput && existingInput.id !== userInput.id))
+            this.set('searchedTerms.category', [userInput]);
+        } else {
+          let userInput = Discourse.Category.findById(subcategories[0]);
+          if (!existingInput || (userInput && existingInput.id !== userInput.id))
+            this.set('searchedTerms.category', [userInput]);
+        }
     } else
       this.set('searchedTerms.category', []);
 
     const groupMatches = searchTerm.match(/(group:[a-zA-Z0-9_\-.]+)/ig);
-    if (groupMatches)
-      this.set('searchedTerms.group', [groupMatches[0].replace('group:', '')]);
-    else
+    if (groupMatches) {
+      let existingInput = _.isArray(this.get('searchedTerms.group')) ? this.get('searchedTerms.group')[0] : this.get('searchedTerms.group');
+      let userInput = groupMatches[0].replace('group:', '');
+      if (existingInput !== userInput)
+        this.set('searchedTerms.group', [userInput]);
+    } else
       this.set('searchedTerms.group', []);
 
     const badgeMatches = searchTerm.match(/(badge:[a-zA-Z0-9_\-.]+)/ig);
-    if (badgeMatches)
-      this.set('searchedTerms.badge', [badgeMatches[0].replace('badge:', '')]);
-    else
+    if (badgeMatches) {
+      let existingInput = _.isArray(this.get('searchedTerms.badge')) ? this.get('searchedTerms.badge')[0] : this.get('searchedTerms.badge');
+      let userInput = badgeMatches[0].replace('badge:', '');
+      if (existingInput !== userInput)
+        this.set('searchedTerms.badge', [badgeMatches[0].replace('badge:', '')]);
+    } else
       this.set('searchedTerms.badge', []);
 
     const tagMatches = searchTerm.match(/(tags?:[a-zA-Z0-9,\-_]+)/ig);
-    if (tagMatches)
-      this.set('searchedTerms.tags', tagMatches[0].replace(/tags?:/ig, '').split(','));
-    else
+    if (tagMatches) {
+      let existingInput = _.isArray(this.get('searchedTerms.tags')) ? this.get('searchedTerms.tags').join(',') : this.get('searchedTerms.tags');
+      let userInput = tagMatches[0].replace(/tags?:/ig, '');
+      if (existingInput !== userInput)
+        this.set('searchedTerms.tags', userInput.split(','));
+    } else
       this.set('searchedTerms.tags', []);
 
     const inMatches = searchTerm.match(/(in:[a-zA-Z]+)/ig);
-    if (inMatches)
-      this.set('searchedTerms.in', inMatches[0].replace('in:', ''));
-    else
+    if (inMatches) {
+      let existingInput = this.get('searchedTerms.in');
+      let userInput = inMatches[0].replace('in:', '');
+      if (existingInput !== userInput)
+        this.set('searchedTerms.in', userInput);
+    } else
       this.set('searchedTerms.in', '');
 
     const statusMatches = searchTerm.match(/(status:[a-zA-Z_]+)/ig);
-    if (statusMatches)
-      this.set('searchedTerms.status', statusMatches[0].replace('status:', ''));
-    else
+    if (statusMatches) {
+      let existingInput = this.get('searchedTerms.status');
+      let userInput = statusMatches[0].replace('status:', '');
+      if (existingInput !== userInput)
+        this.set('searchedTerms.status', userInput);
+    } else
       this.set('searchedTerms.status', '');
 
     const postCountMatches = searchTerm.match(/(posts_count:[0-9]+)/ig);
-    if (postCountMatches)
-      this.set('searchedTerms.posts_count', postCountMatches[0].replace('posts_count:', ''));
-    else
+    if (postCountMatches) {
+      let existingInput = this.get('searchedTerms.posts_count');
+      let userInput = postCountMatches[0].replace('posts_count:', '');
+      if (existingInput !== userInput)
+        this.set('searchedTerms.posts_count', userInput);
+    } else
       this.set('searchedTerms.posts_count', '');
 
     const postTimeMatches = searchTerm.match(/((before|after):[0-9\-]+)/ig);
     if (postTimeMatches) {
-      this.set('searchedTerms.time.when', postTimeMatches[0].match(/(before|after)/ig)[0]);
-      this.set('searchedTerms.time.days', postTimeMatches[0].replace(/(before|after):/ig, ''));
+      let existingInputWhen = this.get('searchedTerms.time.when');
+      let userInputWhen = postTimeMatches[0].match(/(before|after)/ig)[0];
+      if (existingInputWhen !== userInputWhen) {
+        this.set('searchedTerms.time.when', userInputWhen);
+      }
+
+      let existingInputDays = this.get('searchedTerms.time.days');
+      let userInputDays = postTimeMatches[0].replace(/(before|after):/ig, '');
+      if (existingInputDays !== userInputDays) {
+        this.set('searchedTerms.time.days', userInputDays);
+      }
     } else
       this.set('searchedTerms.time.days', '');
   },
