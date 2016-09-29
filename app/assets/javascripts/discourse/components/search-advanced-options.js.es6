@@ -43,7 +43,7 @@ export default Em.Component.extend({
     } else
       this.set('searchedTerms.username', []);
 
-    const categoryMatches = searchTerm.match(/(\#[a-zA-Z0-9\-:]+|category:[a-zA-Z0-9\-:]+)/ig);
+    const categoryMatches = searchTerm.match(/(\#[a-zA-Z0-9\-:]+|category:[0-9]+)/ig);
     if (categoryMatches) {
       const subcategories = categoryMatches[0].replace('category:', '').replace('#', '').split(':');
       if (subcategories.length > 1)
@@ -120,16 +120,32 @@ export default Em.Component.extend({
   @observes('searchedTerms.category')
   updateCategory() {
     let searchTerm = this.get('searchTerm');
-
-    const categoryMatches = searchTerm.match(/\s?(\#[a-zA-Z0-9\-:]+|category:[a-zA-Z0-9\-:]+)/ig);
     const categoryFilter = this.get('searchedTerms.category');
+
+    const slugCategoryMatches = searchTerm.match(/\s?(\#[a-zA-Z0-9\-:]+)/ig);
+    const idCategoryMatches = searchTerm.match(/\s?(category:[0-9]+)/ig);
     if (categoryFilter && categoryFilter.length !== 0) {
-      if (categoryMatches)
-        searchTerm = searchTerm.replace(categoryMatches[0], ' category:' + categoryFilter[0].id);
-      else
-        searchTerm += ' category:' + categoryFilter[0].id;
-    } else if (categoryMatches)
-      searchTerm = searchTerm.replace(categoryMatches[0], '');
+      if (categoryFilter[0] && categoryFilter[0].parentCategory) {
+        if (slugCategoryMatches)
+          searchTerm = searchTerm.replace(slugCategoryMatches[0], ' #' + categoryFilter[0].parentCategory.slug + ":" + categoryFilter[0].slug);
+        else if (idCategoryMatches)
+          searchTerm = searchTerm.replace(idCategoryMatches[0], ' category:' + categoryFilter[0].id);
+        else
+          searchTerm += ' #' + categoryFilter[0].parentCategory.slug + ":" + categoryFilter[0].slug;
+      } else if (categoryFilter[0]) {
+        if (slugCategoryMatches)
+          searchTerm = searchTerm.replace(slugCategoryMatches[0], ' #' + categoryFilter[0].slug);
+        else if (idCategoryMatches)
+          searchTerm = searchTerm.replace(idCategoryMatches[0], ' category:' + categoryFilter[0].id);
+        else
+          searchTerm += ' #' + categoryFilter[0].slug;
+      }
+    } else {
+      if (slugCategoryMatches)
+        searchTerm = searchTerm.replace(slugCategoryMatches[0], '');
+      if (idCategoryMatches)
+        searchTerm = searchTerm.replace(idCategoryMatches[0], '');
+    }
 
     this.set('searchTerm', searchTerm);
   },
