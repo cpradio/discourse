@@ -1,4 +1,4 @@
-import { on, default as computed } from 'ember-addons/ember-computed-decorators';
+import { on, observes, default as computed } from 'ember-addons/ember-computed-decorators';
 
 export default Ember.Component.extend({
   @computed('placeholderKey')
@@ -6,16 +6,22 @@ export default Ember.Component.extend({
     return placeholderKey ? I18n.t(placeholderKey) : '';
   },
 
+  @observes('badgeNames')
+  _update() {
+    this._initializeAutocomplete({updateData: true});
+  },
+
   @on('didInsertElement')
-  _initializeAutocomplete() {
+  _initializeAutocomplete(opts) {
     var self = this;
     var selectedBadges;
 
     var template = this.container.lookup('template:badge-selector-autocomplete.raw');
     self.$('input').autocomplete({
       allowAny: false,
-      items: this.get('badgeNames'),
+      items: _.isArray(this.get('badgeNames')) ? this.get('badgeNames') : [this.get('badgeNames')],
       single: this.get('single'),
+      updateData: (opts && opts.updateData) ? opts.updateData : false,
       onChangeItems: function(items){
         selectedBadges = items;
         self.set("badgeNames", items.join(","));
