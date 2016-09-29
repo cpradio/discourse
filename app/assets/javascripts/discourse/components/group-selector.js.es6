@@ -15,11 +15,12 @@ export default Ember.Component.extend({
   _initializeAutocomplete(opts) {
     var self = this;
     var selectedGroups;
+    var groupNames = this.get('groupNames');
 
     var template = this.container.lookup('template:group-selector-autocomplete.raw');
     self.$('input').autocomplete({
       allowAny: false,
-      items: _.isArray(this.get('groupNames')) ? this.get('groupNames') : [this.get('groupNames')],
+      items: _.isArray(groupNames) ? groupNames : (Ember.isEmpty(groupNames)) ? [] : [groupNames],
       single: this.get('single'),
       updateData: (opts && opts.updateData) ? opts.updateData : false,
       onChangeItems: function(items){
