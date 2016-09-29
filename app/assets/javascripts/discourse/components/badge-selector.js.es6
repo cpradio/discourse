@@ -8,7 +8,8 @@ export default Ember.Component.extend({
 
   @observes('badgeNames')
   _update() {
-    this._initializeAutocomplete({updateData: true});
+    if (this.get('canReceiveUpdates'))
+      this._initializeAutocomplete({updateData: true});
   },
 
   @on('didInsertElement')
