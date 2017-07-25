@@ -59,6 +59,16 @@ dd {
   clear: both;
 }
 
+.cooked ul, .d-editor-preview ul {
+  margin: initial;
+  padding: initial;
+  -webkit-margin-before: 1em;
+  -webkit-margin-after: 1em;
+  -webkit-margin-start: 0px;
+  -webkit-margin-end: 0px;
+  -webkit-padding-start: 40px;
+}
+
 li {
   > ul,
   > ol {

@@ -281,6 +281,10 @@ class Search
     posts.where("posts.post_number = 1")
   end
 
+  advanced_filter(/in:title/) do |posts|
+    posts.where("topics.title = 1")
+  end
+
   advanced_filter(/in:pinned/) do |posts|
     posts.where("topics.pinned_at IS NOT NULL")
   end
